@@ -1,75 +1,74 @@
 import streamlit as st
 
-# This makes the website look like the Solo Leveling Blue Screen
-st.set_page_config(page_title="The System", page_icon="⚔️")
+# Setup
+st.set_page_config(page_title="THE SYSTEM", page_icon="⚔️", layout="wide")
 
-# FIX: Changed 'value' to 'html' below
+# Dark Theme CSS
 st.markdown("""
     <style>
     .main { background-color: #0e1117; color: #00ccff; }
-    stMarkdown { color: #00ccff; }
+    .stMetric { background-color: #1a1c24; padding: 10px; border-radius: 10px; border: 1px solid #00ccff; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚔️ SYSTEM: DAILY QUEST")
-st.write("---")
+# --- 1. THE DATA ENGINE (Session State) ---
+# This keeps your stats from resetting every time you click a button
+if 'level' not in st.session_state:
+    st.session_state.level = 1
+    st.session_state.xp = 0
+    st.session_state.strength = 10
+    st.session_state.agility = 10
 
-# 1. Tracker Section
-st.header("Status Window")
-job = st.selectbox("Current Class", ["F-Rank Human", "Shadow Monarch", "Mage", "Assassin"])
-exp = st.slider("Daily Progress", 0, 100, 0)
-
-# 2. The Exercise Goal
-st.subheader("Today's Tasks")
-q1 = st.checkbox("Pushups (0/100)")
-q2 = st.checkbox("Squats (0/100)")
-q3 = st.checkbox("Running (10km)")
-
-if q1 and q2 and q3:
-    st.success("QUEST COMPLETED! YOU HAVE SURVIVED.")
-    st.balloons()
-else:
-    st.info("Penalty Quest will begin in 00:00:10 if not completed.")
-
-# 3. AI Feedback (The "Bot")
-st.divider()
-st.subheader("🤖 System Feedback")
-feedback_input = st.text_input("How does your body feel?")
-
-if feedback_input:
-    st.write(f"System Analysis: '{feedback_input}' detected. Adjusting difficulty for tomorrow.")
-    import streamlit as st
-import random
-
-# System configuration for the Solo Leveling Blue Screen
-st.set_page_config(page_title="THE SYSTEM", page_icon="⚔️", layout="wide")
-
-st.markdown("""
-    <style>
-    .main { background-color: #0e1117; color: #00ccff; font-family: 'Courier New', Courier, monospace; }
-    .stMarkdown { color: #00ccff; }
-    div.stButton > button { background-color: #004466; color: white; border: 1px solid #00ccff; width: 100%; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- SIDEBAR: PLAYER STATUS ---
+# --- 2. SIDEBAR (Locked Stats) ---
 st.sidebar.title("👤 PLAYER STATUS")
-player_name = st.sidebar.text_input("Player Name", "Sung Jin-Woo")
-rank = st.sidebar.selectbox("Current Rank", ["E-Rank (Weakest)", "D-Rank", "C-Rank", "B-Rank", "A-Rank", "S-Rank"])
+st.sidebar.subheader("Rank: E-Rank")
 
-# Level and Stats
-if 'level' not in st.session_state: st.session_state.level = 1
-if 'xp' not in st.session_state: st.session_state.xp = 0
-
-st.sidebar.metric("Level", st.session_state.level)
+# These are metrics, NOT inputs (so they aren't editable)
+st.sidebar.metric("Current Level", st.session_state.level)
+st.sidebar.write(f"XP to Level Up: {st.session_state.xp}/100")
 st.sidebar.progress(st.session_state.xp / 100)
-st.sidebar.write(f"XP: {st.session_state.xp}/100")
 
 st.sidebar.divider()
-st.sidebar.write("**Attributes:**")
-st.sidebar.text(f"Strength: {10 + st.session_state.level}")
-st.sidebar.text(f"Agility: {8 + st.session_state.level}")
+st.sidebar.write("### Attributes")
+st.sidebar.text(f"Strength: {st.session_state.strength}")
+st.sidebar.text(f"Agility: {st.session_state.agility}")
 
-# --- MAIN SCREEN ---
-st.title(f"⚔️ SYSTEM: DAILY QUEST FOR {player_name.upper()}")
-st.write("---")
+# --- 3. MAIN QUEST AREA ---
+st.title("⚔️ DAILY QUEST: GETTING STRONGER")
+
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    st.markdown("### Active Tasks")
+    p1 = st.checkbox("100 Push-ups")
+    p2 = st.checkbox("100 Sit-ups")
+    p3 = st.checkbox("100 Squats")
+    p4 = st.checkbox("10km Run")
+
+    # The Button that triggers the change
+    if st.button("COLLECT REWARD"):
+        if p1 and p2 and p3 and p4:
+            # Increase XP
+            st.session_state.xp += 50
+            st.success("Quest Cleared! +50 XP")
+            # Level Up Logic
+            if st.session_state.xp >= 100:
+                st.session_state.level += 1
+                st.session_state.xp = 0
+                # Auto-calculate new stats
+                st.session_state.strength += 2
+                st.session_state.agility += 1
+                st.balloons()
+                st.toast("LEVEL UP! Your body feels lighter.")
+        else:
+            st.error("Quest incomplete. The System does not reward laziness.")
+
+with col2:
+    st.markdown("### 🤖 Shadow Guide")
+    st.info("System is analyzing your growth...")
+    
+    # Quick AI Feedback based on Level
+    if st.session_state.level < 2:
+        st.write("Current Status: 'Weak.' Continue training to unlock the Job Change quest.")
+    else:
+        st.write("Current Status: 'Evolving.' You are no longer the weakest.")
