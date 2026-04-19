@@ -38,3 +38,38 @@ feedback_input = st.text_input("How does your body feel?")
 
 if feedback_input:
     st.write(f"System Analysis: '{feedback_input}' detected. Adjusting difficulty for tomorrow.")
+    import streamlit as st
+import random
+
+# System configuration for the Solo Leveling Blue Screen
+st.set_page_config(page_title="THE SYSTEM", page_icon="⚔️", layout="wide")
+
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; color: #00ccff; font-family: 'Courier New', Courier, monospace; }
+    .stMarkdown { color: #00ccff; }
+    div.stButton > button { background-color: #004466; color: white; border: 1px solid #00ccff; width: 100%; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- SIDEBAR: PLAYER STATUS ---
+st.sidebar.title("👤 PLAYER STATUS")
+player_name = st.sidebar.text_input("Player Name", "Sung Jin-Woo")
+rank = st.sidebar.selectbox("Current Rank", ["E-Rank (Weakest)", "D-Rank", "C-Rank", "B-Rank", "A-Rank", "S-Rank"])
+
+# Level and Stats
+if 'level' not in st.session_state: st.session_state.level = 1
+if 'xp' not in st.session_state: st.session_state.xp = 0
+
+st.sidebar.metric("Level", st.session_state.level)
+st.sidebar.progress(st.session_state.xp / 100)
+st.sidebar.write(f"XP: {st.session_state.xp}/100")
+
+st.sidebar.divider()
+st.sidebar.write("**Attributes:**")
+st.sidebar.text(f"Strength: {10 + st.session_state.level}")
+st.sidebar.text(f"Agility: {8 + st.session_state.level}")
+
+# --- MAIN SCREEN ---
+st.title(f"⚔️ SYSTEM: DAILY QUEST FOR {player_name.upper()}")
+st.write("---")
