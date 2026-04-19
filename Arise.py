@@ -1,113 +1,119 @@
 import streamlit as st
-import time
+import pandas as pd
 
-# 1. PAGE CONFIG
-st.set_page_config(page_title="THE SYSTEM", page_icon="⚔️", layout="wide")
+# 1. PAGE SETUP
+st.set_page_config(page_title="SYSTEM: ARISE", page_icon="🌌", layout="wide")
 
-# 2. ADVANCED DARK THEME & ANIMATIONS (CSS)
+# 2. CYBERPUNK HUD CSS (The 'Katana 15' Special)
 st.markdown("""
     <style>
-    /* Dark Gradient Background */
+    /* Full Dark Background with Blue Glow */
     .stApp {
-        background: radial-gradient(circle, #0a0c10 0%, #06080a 100%);
+        background: #050505;
+        background-image: 
+            radial-gradient(at 0% 0%, hsla(210,100%,10%,0.5) 0, transparent 50%), 
+            radial-gradient(at 50% 0%, hsla(225,100%,15%,0.5) 0, transparent 50%);
         color: #00ccff;
     }
-    
-    /* Glowing Stat Cards */
-    div[data-testid="stMetric"] {
-        background-color: rgba(0, 204, 255, 0.05);
-        border: 1px solid #00ccff;
-        border-radius: 15px;
-        box-shadow: 0 0 10px rgba(0, 204, 255, 0.2);
-        transition: transform 0.3s ease;
-    }
-    div[data-testid="stMetric"]:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(0, 204, 255, 0.4);
+
+    /* Glassmorphism Panels */
+    [data-testid="stSidebar"], .stMetric, .stCheckbox {
+        background: rgba(0, 204, 255, 0.03) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 204, 255, 0.2) !important;
+        border-radius: 15px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8) !important;
     }
 
-    /* Custom Titles */
-    h1, h2, h3 {
-        text-shadow: 2px 2px 4px #000000, 0 0 15px #00ccff;
-        letter-spacing: 2px;
+    /* Animated Neon Headers */
+    h1 {
+        text-transform: uppercase;
+        font-weight: 900;
+        color: #fff;
+        text-shadow: 0 0 5px #fff, 0 0 10px #00ccff, 0 0 20px #00ccff;
+        animation: flicker 2s infinite alternate;
     }
 
-    /* Checkbox Strike-through Effect */
-    .stCheckbox {
-        background: rgba(255, 255, 255, 0.02);
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 5px;
+    @keyframes flicker {
+        0%, 18%, 22%, 25%, 53%, 57%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #00ccff; }
+        20%, 24%, 55% { text-shadow: none; }
+    }
+
+    /* Progress Bar Color */
+    .stProgress > div > div > div > div {
+        background-image: linear-gradient(to right, #004466 , #00ccff);
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. INITIALIZE STATS
+# 3. DATABASE INITIALIZATION
 if 'level' not in st.session_state: st.session_state.level = 1
 if 'xp' not in st.session_state: st.session_state.xp = 0
-if 'strength' not in st.session_state: st.session_state.strength = 10
-if 'agility' not in st.session_state: st.session_state.agility = 10
+if 'stats' not in st.session_state: 
+    st.session_state.stats = {"STR": 10, "AGI": 10, "INT": 10, "VIT": 10}
 
-# 4. LEVELING LOGIC (The "Evolution")
-def get_rank(lvl):
-    if lvl < 5: return "E-Rank (The Weakest)"
-    elif lvl < 10: return "D-Rank (Awakened)"
-    elif lvl < 20: return "C-Rank (Veteran)"
-    else: return "S-Rank (Shadow Monarch)"
+# 4. LEVEL & RANK CALCULATOR
+def get_rank():
+    lvl = st.session_state.level
+    if lvl < 5: return "E-Rank Hunter", "#808080"
+    if lvl < 10: return "D-Rank Awakened", "#00ffcc"
+    if lvl < 20: return "S-Rank Monarch", "#ff00ff"
+    return "Shadow Sovereign", "#ffffff"
 
-current_rank = get_rank(st.session_state.level)
+rank_title, rank_color = get_rank()
 
-# 5. SIDEBAR
-st.sidebar.title("👤 PLAYER INFO")
-st.sidebar.markdown(f"**RANK:** <span style='color:#ff00ff'>{current_rank}</span>", unsafe_allow_html=True)
-st.sidebar.metric("LEVEL", st.session_state.level)
-st.sidebar.progress(st.session_state.xp / 100)
+# 5. SIDEBAR: HUD DISPLAY
+with st.sidebar:
+    st.title("👤 PLAYER HUD")
+    st.markdown(f"### <span style='color:{rank_color}'>{rank_title}</span>", unsafe_allow_html=True)
+    st.write("---")
+    
+    st.metric("SYSTEM LEVEL", st.session_state.level)
+    st.write(f"EXP Progress: {st.session_state.xp}%")
+    st.progress(st.session_state.xp / 100)
+    
+    st.write("### Attributes")
+    for stat, val in st.session_state.stats.items():
+        st.write(f"{stat}: {val}")
+        st.progress(min(val/100, 1.0))
 
-st.sidebar.write("---")
-st.sidebar.subheader("Attributes")
-st.sidebar.metric("Strength", st.session_state.strength)
-st.sidebar.metric("Agility", st.session_state.agility)
-
-# 6. MAIN SYSTEM INTERFACE
-st.title("⚔️ SYSTEM: DAILY QUEST")
-st.subheader("Current Mission: Overcome Your Limits")
+# 6. MAIN CONTENT
+st.title("⚔️ SYSTEM INTERFACE: DAILY QUEST")
 
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.write("### Quest Log")
-    q1 = st.checkbox("Push-ups: 100")
-    q2 = st.checkbox("Sit-ups: 100")
-    q3 = st.checkbox("Squats: 100")
-    q4 = st.checkbox("Running: 10km")
+    st.subheader("📝 MISSION LOG")
+    q1 = st.checkbox("🔥 PUSH-UPS (100 REPS)", key="c1")
+    q2 = st.checkbox("⚡ SIT-UPS (100 REPS)", key="c2")
+    q3 = st.checkbox("🦵 SQUATS (100 REPS)", key="c3")
+    q4 = st.checkbox("🏃 10KM RUN", key="c4")
 
-    if st.button("CLAIM REWARD"):
+    if st.button("EXECUTE REWARD PROTOCOL"):
         if q1 and q2 and q3 and q4:
             st.session_state.xp += 50
             if st.session_state.xp >= 100:
                 st.session_state.level += 1
                 st.session_state.xp = 0
-                st.session_state.strength += 5
-                st.session_state.agility += 3
+                # Random Stat Gains
+                st.session_state.stats["STR"] += 5
+                st.session_state.stats["AGI"] += 3
+                st.session_state.stats["VIT"] += 4
                 st.balloons()
-                st.toast("LEVEL UP! THE SYSTEM HAS CHOSEN YOU.")
-            else:
-                st.success("Task Complete. XP Gained.")
+            st.success("STRENGTH RECORDED. LEVELING UP...")
         else:
-            st.error("Penalty Quest Triggered: You cannot deceive the System.")
+            st.error("QUEST INCOMPLETE. PENALTY IMMINENT.")
 
 with col2:
-    st.write("### 🤖 Shadow Guide")
-    
-    # DYNAMIC AI DIALOGUE
-    if st.session_state.level < 5:
-        st.info("System: 'Your muscles are screaming. Good. That is the sound of growth.'")
-    elif st.session_state.level < 10:
-        st.warning("System: 'E-Rank limits exceeded. Preparing for Job Change Quest.'")
-    else:
-        st.error("System: 'Arise. The shadows await your command.'")
-
-    # Interactive Feedback
-    mood = st.select_slider("How is your physical fatigue?", options=["Low", "Medium", "High", "Critical"])
-    if mood == "Critical":
-        st.write("🛡️ *System Suggestion: Focus on Vitality today. Reduce speed, increase form.*")
+    st.subheader("🤖 SHADOW GUIDE AI")
+    with st.container():
+        st.write(f"**Current Status:** {rank_title}")
+        if st.session_state.level < 5:
+            st.info("System: 'Your muscles are tearing. This is necessary to hold the Shadow's power.'")
+        else:
+            st.warning("System: 'Warning: Detecting mana overflow. You are approaching the Job Change.'")
+            
+    st.divider()
+    feedback = st.text_input("Report Physical Strain Level:")
+    if feedback:
+        st.write(f"Analyzing '{feedback}'... System suggests increasing recovery by 15%.")
