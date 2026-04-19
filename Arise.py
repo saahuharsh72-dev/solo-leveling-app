@@ -1,28 +1,30 @@
 import streamlit as st
-import pandas as pd
 
 # 1. PAGE SETUP
 st.set_page_config(page_title="SYSTEM: ARISE", page_icon="🌌", layout="wide")
 
-# 2. CYBERPUNK HUD CSS (The 'Katana 15' Special)
+# 2. GALAXY & SHADOW HUD CSS 
 st.markdown("""
     <style>
-    /* Full Dark Background with Blue Glow */
+    /* Deep Space Galaxy Background with Shadow Overlay */
     .stApp {
-        background: #050505;
         background-image: 
-            radial-gradient(at 0% 0%, hsla(210,100%,10%,0.5) 0, transparent 50%), 
-            radial-gradient(at 50% 0%, hsla(225,100%,15%,0.5) 0, transparent 50%);
+            linear-gradient(to bottom, rgba(5, 5, 10, 0.75), rgba(0, 0, 0, 0.95)),
+            url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1920&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
         color: #00ccff;
     }
 
-    /* Glassmorphism Panels */
+    /* Glassmorphism Panels - Now more transparent so you can see the galaxy */
     [data-testid="stSidebar"], .stMetric, .stCheckbox {
-        background: rgba(0, 204, 255, 0.03) !important;
-        backdrop-filter: blur(10px);
+        background: rgba(0, 15, 30, 0.4) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(0, 204, 255, 0.2) !important;
         border-radius: 15px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6) !important;
     }
 
     /* Animated Neon Headers */
@@ -41,7 +43,7 @@ st.markdown("""
 
     /* Progress Bar Color */
     .stProgress > div > div > div > div {
-        background-image: linear-gradient(to right, #004466 , #00ccff);
+        background-image: linear-gradient(to right, #002244 , #00ccff);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -65,7 +67,7 @@ rank_title, rank_color = get_rank()
 # 5. SIDEBAR: HUD DISPLAY
 with st.sidebar:
     st.title("👤 PLAYER HUD")
-    st.markdown(f"### <span style='color:{rank_color}'>{rank_title}</span>", unsafe_allow_html=True)
+    st.markdown(f"### <span style='color:{rank_color}; text-shadow: 0 0 10px {rank_color};'>{rank_title}</span>", unsafe_allow_html=True)
     st.write("---")
     
     st.metric("SYSTEM LEVEL", st.session_state.level)
@@ -78,7 +80,7 @@ with st.sidebar:
         st.progress(min(val/100, 1.0))
 
 # 6. MAIN CONTENT
-st.title("⚔️ SYSTEM INTERFACE: DAILY QUEST")
+st.title("⚔️ SYSTEM: DAILY QUEST")
 
 col1, col2 = st.columns([2, 1])
 
@@ -95,25 +97,24 @@ with col1:
             if st.session_state.xp >= 100:
                 st.session_state.level += 1
                 st.session_state.xp = 0
-                # Random Stat Gains
                 st.session_state.stats["STR"] += 5
                 st.session_state.stats["AGI"] += 3
                 st.session_state.stats["VIT"] += 4
                 st.balloons()
-            st.success("STRENGTH RECORDED. LEVELING UP...")
+            st.success("STRENGTH RECORDED. EVOLUTION CONTINUES...")
         else:
             st.error("QUEST INCOMPLETE. PENALTY IMMINENT.")
 
 with col2:
-    st.subheader("🤖 SHADOW GUIDE AI")
+    st.subheader("🤖 SHADOW GUIDE")
     with st.container():
-        st.write(f"**Current Status:** {rank_title}")
+        st.write(f"**Vessel Status:** {rank_title}")
         if st.session_state.level < 5:
-            st.info("System: 'Your muscles are tearing. This is necessary to hold the Shadow's power.'")
+            st.info("System: 'The shadows are swirling around you, but your vessel is still too weak. Keep grinding.'")
         else:
-            st.warning("System: 'Warning: Detecting mana overflow. You are approaching the Job Change.'")
+            st.warning("System: 'Warning: Detecting mana overflow. The shadows are ready to obey.'")
             
     st.divider()
     feedback = st.text_input("Report Physical Strain Level:")
     if feedback:
-        st.write(f"Analyzing '{feedback}'... System suggests increasing recovery by 15%.")
+        st.write(f"System Logging: '{feedback}'. Adjusting recovery protocol.")
